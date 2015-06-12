@@ -2,11 +2,11 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.conveyal</groupId>
-  <artifactId>qbroker</artifactId>
+  <artifactId>cluster-broker</artifactId>
   <packaging>jar</packaging>
   <version>0.1-SNAPSHOT</version>
-  <name>osm-lib</name>
-  <url>https://github.com/conveyal/osm-lib</url>
+  <name>Analyst Cluster Broker</name>
+  <url>https://github.com/conveyal/cluster-broker</url>
 
   <!-- Define where the artifacts produced by this build will be deployed -->
   <distributionManagement>

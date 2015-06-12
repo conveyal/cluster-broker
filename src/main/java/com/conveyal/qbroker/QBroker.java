@@ -22,6 +22,13 @@ import java.util.Map;
  *
  * When no work is available, the polling functions return immediately. Workers are expected to sleep and re-poll
  * after a few tens of seconds.
+ *
+ * TODO if there is a backlog of work (the usual case when jobs are lined up) workers will constantly change graphs
+ * We need a queue of deferred work: (job, timestamp) when a job would have fairly had its work consumed  if a worker was available.
+ * Anything that survives at the head of that queue for more than e.g. one minute gets forced on a non-affinity worker.
+ * Any new workers without an affinity preferentially pull work off the deferred queue.
+ * Polling worker connections scan the deferred queue before ever going to the main circular queue.
+ * When the deferred queue exceeds a certain size, that's when we must start more workers.
  */
 public class QBroker implements Runnable {
 
