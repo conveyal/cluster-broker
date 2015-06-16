@@ -213,14 +213,26 @@ public class QBroker implements Runnable {
         }
         // Attempt to deliver the tasks to the given consumer.
         try {
+            response.setStatus(HttpStatus.OK_200);
             OutputStream out = response.getOutputStream();
+            // This is a JSON object of the form {taskId1: request1, taskId2: request2}
+            int n = 0;
+            out.write('{');
             for (Task task : tasks) {
+                // FIXME we should really not be assembling JSON one character at a time
+                // use tree model
+                if (n++ > 0) {
+                    out.write(',');
+                    out.write('\n');
+                }
+                out.write('"');
                 out.write(Integer.toString(task.taskId).getBytes());
+                out.write('"');
                 out.write(':');
                 out.write(task.payload.getBytes());
-                out.write('\n');
             }
-            response.setStatus(HttpStatus.OK_200);
+            out.write('\n');
+            out.write('}');
             response.resume();
         } catch (IOException e) {
             // Connection was probably closed, but treat it as a server error.
