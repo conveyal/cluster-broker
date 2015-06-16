@@ -29,6 +29,23 @@ import java.util.Map;
  * Any new workers without an affinity preferentially pull work off the deferred queue.
  * Polling worker connections scan the deferred queue before ever going to the main circular queue.
  * When the deferred queue exceeds a certain size, that's when we must start more workers.
+ *
+ * We should distinguish between two cases:
+ * 1. we were waiting for work and woke up because work became available.
+ * 2. we were waiting for a consumer and woke up when one arrived.
+ *
+ * The first case implies that many workers should migrate toward the new work.
+ *
+ * Two key ideas are:
+ * 1. Least recently serviced queue of jobs
+ * 2. Affinity Homeostasis
+ *
+ * If we can constantly keep track of the ideal proportion of workers by graph (based on active queues),
+ * and the true proportion of consumers by graph (based on incoming requests) then we can decide when a worker's graph
+ * affinity should be ignored.
+ *
+ * It may also be helpful to mark jobs every time they are skipped in the LRU queue. Each time a job is serviced,
+ * it is taken out of the queue and put at its end. Jobs that have not been serviced float to the top.
  */
 public class QBroker implements Runnable {
 
