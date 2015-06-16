@@ -46,7 +46,7 @@ class QBrokerHttpHandler extends HttpHandler {
         // request.getRequestURI(); // without protocol or server, only request path
         // request.getPathInfo(); // without handler base path
 
-        response.setContentType("text/plain");
+        response.setContentType("application/json");
 
         // may be a partially specified QueuePath without job or task ID
         QueuePath queuePath = new QueuePath(request.getPathInfo());
@@ -69,9 +69,22 @@ class QBrokerHttpHandler extends HttpHandler {
             } else if (request.getMethod() == Method.POST) {
                 /* Enqueue new messages. */
                 // Text round trip through JSON is done in the HTTP handler thread, does not block the broker thread.
-                JsonNode bodyJson = mapper.readTree(request.getInputStream());
+                JsonNode rootNode = mapper.readTree(request.getInputStream());
+                if (!rootNode.isArray()) {
+                    response.setStatus(HttpStatus.BAD_REQUEST_400);
+                    response.setDetailMessage("Expecting a JSON array of cluster request objects.");
+                    return;
+                } else {
+                    for (JsonNode node : rootNode) {
+                        if (!node.isObject()) {
+                            response.setStatus(HttpStatus.BAD_REQUEST_400);
+                            response.setDetailMessage("Expecting a JSON array of cluster request objects.");
+                            return;
+                        }
+                    }
+                }
                 List<String> taskBodies = new ArrayList<>();
-                for (JsonNode node : bodyJson) {
+                for (JsonNode node : rootNode) {
                     taskBodies.add(mapper.writeValueAsString(node));
                 }
                 qBroker.enqueueTasks(queuePath, taskBodies);
